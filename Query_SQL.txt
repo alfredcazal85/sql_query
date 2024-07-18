@@ -1,0 +1,81 @@
+query1
+SELECT DisplayName, Location, Reputation --selecciono las columnas 
+FROM Users -- de la tabla users
+ORDER BY Reputation DESC; --ordeno por reputacion de manera descendente
+
+query2
+SELECT P.Title, U.DisplayName -- selecciono columna title de tabla posts y displayname de users
+FROM Posts P -- selecciono de la tabla POSTS
+JOIN Users U ON P.OwnerUserId = U.Id -- vinculo usuarios con id usuarios
+WHERE P.OwnerUserId IS NOT NULL; -- diferente a nulo
+
+query3
+SELECT U.DisplayName, AVG(P.Score) AS PromedioScore -- selecciono display name, hago promedio y lo llamo promedio score a la columna
+FROM Posts P -- lo tomo de tabla posts
+JOIN Users U ON P.OwnerUserId = U.Id --vinculo usuarios con id usuarios
+GROUP BY U.DisplayName; --Agrupo por displayname
+
+query4
+SELECT U.DisplayName, COUNT(C.Id) AS CuentaComentario -- selecciono displayname y cuento cuantos comentarios hizo, lo llamo cuenta comentario a la columna
+FROM Comments C -- lo tomo de tabla comentario
+JOIN Users U ON C.Id = U.Id --vinculo usuario con id comentario, siempre y cuando sea igual a usuario id
+GROUP BY U.DisplayName --  agrupo por displayname
+HAVING COUNT(C.Id) > 100; -- filtro aquellos que en la cuenta superen los 100 
+
+query5
+UPDATE Users --actualizo la tabla usuarios
+SET Location = 'DESCONOCIDO' -- con la palabra desconocido en la columna Location
+WHERE Location IS NULL OR Location = ''; --donde Location es nulo o vacio
+
+-- Mostrar un mensaje indicando que la actualización se realizó correctamente.
+PRINT 'La actualización de ubicaciones vacías se realizó correctamente.'; --Imprimir lo que deseo
+
+query6
+-- Paso 1: Usar una subconsulta para seleccionar y eliminar los comentarios
+DELETE FROM Comments -- indico que se eliminaran filas de la tabla comments
+WHERE id IN ( --filtro que utiliza una subconsulta para establecer las condiciones de commentarios a eliminarse 
+    SELECT C.id --tomo id de la tabla comentarios
+    FROM Comments C 
+    JOIN Users U ON C.UserId = U.Id --vinculo el usuario siempre y cuando userid y id coincidan
+    WHERE U.Reputation < 100 -- filtro de reputacion menor a 100
+);
+
+-- Paso 2: Contar los comentarios eliminados
+WITH comments_deleted AS ( --defino una consulta temporal 
+    SELECT C.id -- selecciono id de comments
+    FROM Comments C
+    JOIN Users U ON C.UserId = U.Id --vinculo usuario siempre y cuando userid y id coincidan
+    WHERE U.Reputation < 100 --
+)
+SELECT COUNT(*) AS deleted_comments
+FROM comments_deleted;
+
+query7
+SELECT u.DisplayName, -- seleccionar de tabla usuario la columna Displayname
+       COUNT(DISTINCT p.Id) AS TotalPosts, --Contar distintos tabla posts y totalizar
+       COUNT(DISTINCT c.Id) AS TotalComments, --Contar distintos tabla comentarios y totalizar
+       COUNT(DISTINCT b.Id) AS TotalBadges --Contar distintos tabla medallas y totalizar
+FROM Users u -- de tabla usuarios
+LEFT JOIN Posts p ON u.Id = p.Id -- unir posts siempre que id usuario y post coincidan
+LEFT JOIN Comments c ON u.Id = c.Id --unir comentarios siempre que id usuario y comentario coincidan
+LEFT JOIN Badges b ON u.Id = b.UserId -- unir medallas siempre que id usuario y medallas coincidan
+GROUP BY u.DisplayName; --agrupar por displayname
+
+query 8
+SELECT TOP 10 -- los 10 primeros
+    COALESCE(Title, 'No title') AS Title, -- es una funcion que devuelve el primer valor no null, para que no aparezca titulo null
+    Score
+FROM 
+    Posts --tomar de tabla posts
+ORDER BY 
+    Score DESC; --ordenar por score en manera descenciente
+
+Query 9
+SELECT TOP 5 -- filtro por los 5
+    Text AS CommentText, -- renombro las columnas
+    CreationDate --renombro las columnas
+FROM 
+    Comments --estiro de tabla comments
+ORDER BY 
+    CreationDate DESC; --ordeno descendiente desde fecha de creacion
+
